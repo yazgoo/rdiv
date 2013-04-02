@@ -1,45 +1,68 @@
 require 'rdiv.rb'
-module Rdiv
-    class Enemy < Process
-        def initialize x, dep_x, dep_y
-            super x, -20
-            @dep_x = dep_x; @dep_y = dep_y
-            size rand(25, 100)
-        end
-        def run
-            die { } if @y > 220 or collides :Shot
-            @x = @x + @dep_x
-            @y = @y + @dep_y
-            frame
-        end
+include Rdiv
+class Enemy < Item
+    def initialize x, dep_x, dep_y
+        super x, -20
+        @dep_x, @dep_y = dep_x, dep_y
+        @scale = 0.5 * (1 + rand)
     end
-    class Shot < Process
-        def run
-            die {} if y < 0
-            @y = @y - 16
-            frame
-        end
+    def run
+        die do
+            first_item(:Score).increment
+            Explosion.new @x, @y
+        end if collides :Shot
+        die if @y > (@@height + @height)
+        translate @dep_x, @dep_y
     end
-    class Ship < Process
-        def initialize
-            super 160, 180
-        end
-        def run
-            @x = @mouse.x
-            Shot.new(@x, @y - 20) if @mouse.left
-            quit "You died. Thank's for playing to test1." if collides :Enemy
-            frame
-        end
-    end
-    class Test1 < Program
-        def initialize
-            super 320, 200
-            put_screen :background
-            Ship.new
-        end
-        def run
-            Enemy.new rand(0, 320), rand(-1, 1), rand(1, 2) if rand(0, 100) < 3
-        end
-    end
-    Test1.new().start
 end
+class Explosion < AnimatedItem
+end
+class Score < Counter
+    def initialize value
+        super @@width / 2, 0, value
+    end
+end
+class Shot < Item
+    def run
+        die if y < 0
+        translate 0, -16
+    end
+end
+class Ship < Item
+    def initialize
+        super
+        @cannon_energy = 0
+        @cannon_energy_maximum = 10
+    end
+    def run
+        move_to @mouse.x, @@height - @height
+        score = first_item(:Score)
+        if @mouse.left and @cannon_energy == @cannon_energy_maximum and score > 0
+            score.decrement
+            Shot.new(@x, @y - @height / 2)
+            @cannon_energy = 0
+        end
+        @cannon_energy += 1 if @cannon_energy < @cannon_energy_maximum
+        die do
+            Explosion.new @x, @y
+            Text.new 0, 0, "You died. Thanks for playing"
+        end if collides :Enemy
+    end
+end
+class Test1 < Main
+    def setup
+        Ship.new
+        Score.new 10
+    end
+    def run
+        if @done.nil?
+            Enemy.new rand(0, @@height), rand(-1, 1), rand(1, 2) if rand(0, 1000) < 10
+            if first_item(:Score) <= 0
+                @done = Text.new 0, 0, "You have no more amo."
+            elsif first_item(:Score) >= 15
+                @done = Text.new 0, 0, "You won. Well played."
+            end
+        end
+    end
+end
+Test1.new.start
