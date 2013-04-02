@@ -1,5 +1,9 @@
-A ruby game library inspired by Div Game Studio
+A ruby game library to make 2D games fast. It is inspired by div games studio.
 
 Here is a capture:
 
-http://www.youtube.com/watch?v=xeTWOQ483EY
+    http://www.youtube.com/watch?v=xeTWOQ483EY
+
+Here is the source:
+
+    https://github.com/yazgoo/rdiv/blob/master/test1/Test1.rb
