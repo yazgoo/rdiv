@@ -19,7 +19,7 @@ class Explosion < AnimatedItem
 end
 class Score < Counter
     def initialize value
-        super @@width / 2, 0, value
+        super value, 0xffffffff, :center, 0
     end
 end
 class Shot < Item
@@ -45,7 +45,7 @@ class Ship < Item
         @cannon_energy += 1 if @cannon_energy < @cannon_energy_maximum
         die do
             Explosion.new @x, @y
-            Text.new 0, 0, "You died. Thanks for playing"
+            Text.new i18n :die
         end if collides :Enemy
     end
 end
@@ -58,9 +58,9 @@ class Test1 < Main
         if @done.nil?
             Enemy.new rand(0, @@height), rand(-1, 1), rand(1, 2) if rand(0, 1000) < 10
             if first_item(:Score) <= 0
-                @done = Text.new 0, 0, "You have no more amo."
+                @done = Text.new i18n :no_more_amo
             elsif first_item(:Score) >= 15
-                @done = Text.new 0, 0, "You won. Well played."
+                @done = Text.new i18n :win
             end
         end
     end

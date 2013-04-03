@@ -31,7 +31,6 @@ class Frontend < Gosu::Window
         end
         sound_path = process.get_sound_path()
         Gosu::Sample.new(sound_path).play if File.exists? sound_path
-
         @processes[process] = image
     end
     def delete_process process
@@ -58,10 +57,11 @@ class Frontend < Gosu::Window
         @background_image.draw(0, 0, 0) if not @background_image.nil?
         @processes.each do |process, image|
             if process.text
-                image.draw(process.text, process.x, process.y, 0, 1.0, 1.0, 0xffffff00)
+                image.draw(process.text, process.x, process.y, 0, 1.0, 1.0, process.color)
             else
                 image = image[process.i] if process.animated
-                image.draw_rot(process.x, process.y, 1, 0, 0.5, 0.5, process.scale, process.scale)
+                image.draw_rot(process.x, process.y,
+                               1, 0, 0.5, 0.5, process.scale, process.scale)
             end
         end
     end

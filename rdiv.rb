@@ -24,6 +24,9 @@ module Rdiv
         def get_sound_path name
             "./test1/sound/#{name.to_s}.wav"
         end
+        def get_i18n_path
+            "./test1/i18n"
+        end
         def rand a = nil, b = nil
             if a.nil? or b.nil?
                 Kernel.rand
@@ -36,6 +39,11 @@ module Rdiv
         end
         @@mouse = Mouse.new
         @@width = @@height = 0
+        @@i18n_data = nil
+        def i18n name
+            @@i18n_data = YAML.load_file(get_i18n_path) if @@i18n_data.nil?
+            result = @@i18n_data['en'][name.to_s]
+        end
         def initialize
             @mouse = @@mouse
         end
@@ -119,6 +127,8 @@ module Rdiv
         def initialize x = 0, y = 0
             super()
             @scale = 1
+            x = (@@width / 2) if x == :center
+            y = @@height / 2 if y == :center
             @x = x; @y = y
             @@on_new_process.call self
         end
@@ -179,16 +189,18 @@ module Rdiv
         end
     end
     class Text < Item
-        def initialize x, y, text
+        attr_reader :color
+        def initialize text, color = 0xff000000, x = :center, y = :center
             @text = text
+            @color = color
             super x, y
         end
         def run
         end
     end
     class Counter < Text
-        def initialize x, y, value
-            super x, y, value.to_s
+        def initialize value, color = 0xff000000, x = :center, y = :center
+            super value.to_s, color, x, y
         end
         def increment
             @text = (@text.to_i + 1).to_s
